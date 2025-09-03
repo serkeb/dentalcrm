@@ -12,7 +12,8 @@ import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
-import HomePage from './pages/HomePage'; // <-- 1. Importa la nueva página
+import HomePage from './pages/HomePage';
+import PricingPage from './pages/PricingPage'; // <-- 1. Importa la nueva página de precios
 import { Toaster } from 'sonner'
 import './App.css'
 
@@ -22,14 +23,14 @@ function App() {
       <AuthProvider>
         <AppProvider>
           <Routes>
-            {/* --- 2. RUTAS PÚBLICAS (Visibles para todos) --- */}
+            {/* --- RUTAS PÚBLICAS --- */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/pricing" element={<PricingPage />} /> {/* <-- 2. Añade la nueva ruta aquí */}
             
-            {/* --- 3. RUTAS PROTEGIDAS (Solo para usuarios logueados) --- */}
+            {/* --- RUTAS PROTEGIDAS (EL CRM) --- */}
             <Route element={<ProtectedRoute />}>
               <Route element={<Layout />}>
-                {/* La ruta principal para usuarios logueados será el dashboard */}
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/appointments" element={<Appointments />} />
                 <Route path="/patients" element={<Patients />} />
@@ -40,7 +41,7 @@ function App() {
               </Route>
             </Route>
             
-            {/* Si un usuario escribe cualquier otra URL, lo redirige a la página de inicio */}
+            {/* Si no encuentra la ruta, redirige a la página de inicio */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           
