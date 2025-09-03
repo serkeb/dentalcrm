@@ -310,16 +310,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
-```
-
-### Pasos Finales (¡Ahora sí!)
-
-1.  **Reemplaza** el código de `src/pages/HomePage.jsx`.
-2.  **Guarda** el archivo.
-3.  **Sube el cambio a GitHub**:
-    ```bash
-    git add .
-    git commit -m "fix: resolve rendering issues on HomePage"
-    git push
-    
 
