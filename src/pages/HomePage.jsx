@@ -21,12 +21,12 @@ import {
 const HomePage = () => {
   const handleLogin = () => {
     // Navegar a página de login
-    console.log('Navigating to login...');
+    window.location.href = '/login';
   };
 
   const handleSignup = () => {
-    // Navegar a página de registro
-    console.log('Navigating to signup...');
+    // Navegar a página de login (mismo destino para registro)
+    window.location.href = '/login';
   };
 
   const handleDemo = () => {
