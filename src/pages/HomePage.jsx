@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, ShieldCheck, BarChart3, Users, Calendar, CheckCircle } from 'lucide-react';
+// ====> AQUÍ ESTÁ LA CORRECCIÓN <====
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Stethoscope, ShieldCheck, BarChart3, Users, Calendar, CheckCircle, Package } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -15,7 +18,7 @@ const HomePage = () => {
     {
       icon: <Users className="w-8 h-8 text-blue-600" />,
       title: 'Historiales Clínicos Completos',
-      description: 'Accede al historial completo de tus pacientes, desde tratamientos hasta notas personales, en un solo lugar.',
+      description: 'Accede al historial completo de tus pacientes, desde tratamientos hasta notas, en un solo lugar.',
     },
     {
       icon: <Stethoscope className="w-8 h-8 text-blue-600" />,
@@ -30,13 +33,13 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="bg-white text-gray-800">
+    <div className="bg-white text-gray-800 font-sans">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-200">
         <div className="container mx-auto px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-white" />
+              <Package className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">DentalCRM</span>
           </div>
@@ -74,8 +77,9 @@ const HomePage = () => {
                 Ver Demo
               </Button>
             </div>
-             <div className="mt-16">
-                             </div>
+            <div className="mt-16 shadow-2xl rounded-xl">
+              
+            </div>
           </div>
         </section>
 
@@ -91,7 +95,7 @@ const HomePage = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {features.map((feature, index) => (
-                <div key={index} className="bg-gray-50 p-6 rounded-lg text-center">
+                <div key={index} className="bg-gray-50 p-6 rounded-lg text-center transition-transform hover:-translate-y-2">
                   <div className="inline-block p-3 bg-blue-100 rounded-full mb-4">
                     {feature.icon}
                   </div>
@@ -114,9 +118,9 @@ const HomePage = () => {
             </div>
             <div className="flex flex-col lg:flex-row justify-center items-center gap-8">
               <Card className="w-full max-w-sm">
-                <CardHeader>
-                  <CardTitle className="text-center">Básico</CardTitle>
-                  <p className="text-center text-4xl font-bold">$2.500 <span className="text-lg font-normal text-gray-500">/mes</span></p>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">Básico</CardTitle>
+                  <p className="text-4xl font-bold">$2.500 <span className="text-lg font-normal text-gray-500">/mes</span></p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-2 text-gray-600">
@@ -128,11 +132,11 @@ const HomePage = () => {
                   <Button className="w-full" variant="outline">Elegir Plan</Button>
                 </CardContent>
               </Card>
-              <Card className="w-full max-w-sm border-2 border-blue-600 relative">
+              <Card className="w-full max-w-sm border-2 border-blue-600 relative shadow-lg">
                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white">Más Popular</Badge>
-                <CardHeader>
-                  <CardTitle className="text-center">Profesional</CardTitle>
-                  <p className="text-center text-4xl font-bold">$5.000 <span className="text-lg font-normal text-gray-500">/mes</span></p>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">Profesional</CardTitle>
+                  <p className="text-4xl font-bold">$5.000 <span className="text-lg font-normal text-gray-500">/mes</span></p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-2 text-gray-600">
