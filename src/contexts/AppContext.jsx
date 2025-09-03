@@ -291,30 +291,86 @@ const Patients = () => {
                 {/* === Y LA CORRECCIÓN EN EL FORMULARIO === */}
                 <form onSubmit={handleCreateSubmit} className="space-y-4">
                   <TabsContent value="basic" className="space-y-4">
-                    {/* ... (el resto del formulario se queda igual) ... */}
+                    {/* El resto del formulario va aquí */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Nombre completo *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          placeholder="Juan Pérez"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          placeholder="juan@email.com"
-                        />
-                      </div>
+                        <div>
+                            <Label htmlFor="name">Nombre completo *</Label>
+                            <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="Juan Pérez"
+                            required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                            id="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                            placeholder="juan@email.com"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="phone">Teléfono *</Label>
+                            <Input
+                            id="phone"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                            placeholder="+54 11 1234-5678"
+                            required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="gender">Género</Label>
+                            <Select 
+                            value={formData.gender} 
+                            onValueChange={(value) => setFormData({...formData, gender: value})}
+                            >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar género" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {genderOptions.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div>
+                        <Label>Fecha de Nacimiento *</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {formData.birth_date ? format(formData.birth_date, 'PPP', { locale: es }) : 'Seleccionar fecha'}
+                            </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                            <Calendar
+                                mode="single"
+                                selected={formData.birth_date}
+                                onSelect={(date) => setFormData({...formData, birth_date: date})}
+                                disabled={(date) => date > new Date()}
+                                initialFocus
+                            />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="medical" className="space-y-4">
+                    {/* Información médica */}
+                  </TabsContent>
+
                   <DialogFooter className="mt-6">
                     <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                       Cancelar
@@ -327,7 +383,7 @@ const Patients = () => {
           </Dialog>
         </div>
       </div>
-      {/* ... (el resto del JSX se queda igual) ... */}
+      {/* ... (el resto del JSX de la página se queda igual) ... */}
     </div>
   )
 }
