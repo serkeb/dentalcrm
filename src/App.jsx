@@ -13,7 +13,7 @@ import Settings from './pages/Settings'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage';
-import PricingPage from './pages/PricingPage'; // <-- 1. Importa la nueva página de precios
+import PricingPage from './pages/PricingPage';
 import { Toaster } from 'sonner'
 import './App.css'
 
@@ -26,7 +26,7 @@ function App() {
             {/* --- RUTAS PÚBLICAS --- */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/pricing" element={<PricingPage />} /> {/* <-- 2. Añade la nueva ruta aquí */}
+            <Route path="/pricing" element={<PricingPage />} />
             
             {/* --- RUTAS PROTEGIDAS (EL CRM) --- */}
             <Route element={<ProtectedRoute />}>
