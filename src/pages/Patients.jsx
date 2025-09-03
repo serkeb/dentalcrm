@@ -155,7 +155,7 @@ const Patients = () => {
     })
   }
 
-  const handleCreateSubmit = async (e) => {
+  const createPatient = async (e) => {
     e.preventDefault()
     
     try {
@@ -286,7 +286,7 @@ const Patients = () => {
                   <TabsTrigger value="medical">Información Médica</TabsTrigger>
                 </TabsList>
                 
-                <form onSubmit={handleCreateSubmit} className="space-y-4">
+                <form onSubmit={createPatient} className="space-y-4">
                   <TabsContent value="basic" className="space-y-4">
                     {/* Información básica */}
                     <div className="grid grid-cols-2 gap-4">
