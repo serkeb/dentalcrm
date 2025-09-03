@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { AppProvider } from './contexts/AppContext'
-import Layout from './components/Layout'
+import Layout from './components/Layout' // <-- Asegúrate de que esto se importa
 import Dashboard from './pages/Dashboard'
 import Appointments from './pages/Appointments'
 import Patients from './pages/Patients'
@@ -24,23 +24,24 @@ function App() {
             {/* Ruta pública de login */}
             <Route path="/login" element={<Login />} />
             
-            {/* Rutas protegidas */}
-            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="appointments" element={<Appointments />} />
-              <Route path="patients" element={<Patients />} />
-              <Route path="doctors" element={<Doctors />} />
-              <Route path="calendar" element={<Calendar />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="settings" element={<Settings />} />
+            {/* Rutas protegidas que usarán el Layout con el Navbar */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/appointments" element={<Appointments />} />
+                <Route path="/patients" element={<Patients />} />
+                <Route path="/doctors" element={<Doctors />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
             </Route>
             
-            {/* Ruta por defecto */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Ruta por defecto para cualquier otra cosa */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           
-          {/* Notificaciones toast */}
           <Toaster position="top-right" richColors />
         </AppProvider>
       </AuthProvider>
