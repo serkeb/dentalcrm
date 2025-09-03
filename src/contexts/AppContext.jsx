@@ -1,391 +1,281 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { Input } from '@/components/ui/input.jsx'
-import { Badge } from '@/components/ui/badge.jsx'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog.jsx'
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select.jsx'
-import { Label } from '@/components/ui/label.jsx'
-import { Textarea } from '@/components/ui/textarea.jsx'
-import { Calendar } from '@/components/ui/calendar.jsx'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.jsx'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
-import { useApp } from '../contexts/AppContext'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { 
-  Plus,
-  Search,
-  Filter,
-  Edit,
-  Trash2,
-  Eye,
-  Mail,
-  Phone,
-  Calendar as CalendarIcon,
-  User,
-  Users,
-  FileText,
-  MapPin,
-  Heart,
-  AlertCircle,
-  Download,
-  Upload
-} from 'lucide-react'
+import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { db } from '../lib/supabase'
 import { toast } from 'sonner'
+import { useAuth } from './AuthContext'
 
-const Patients = () => {
-  // Aquí se importa createPatient desde el contexto, ¡esto está bien!
-  const { 
-    patients, 
-    appointments,
-    createPatient, 
-    updatePatient, 
-    deletePatient 
-  } = useApp()
+const AppContext = createContext({})
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [ageFilter, setAgeFilter] = useState('all')
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isViewOpen, setIsViewOpen] = useState(false)
-  const [selectedPatient, setSelectedPatient] = useState(null)
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    birth_date: new Date(),
-    gender: '',
-    address: '',
-    emergency_contact: '',
-    emergency_phone: '',
-    insurance: '',
-    medical_notes: '',
-    allergies: '',
-    medications: ''
-  })
-
-  const genderOptions = [
-    { value: 'M', label: 'Masculino' },
-    { value: 'F', label: 'Femenino' },
-    { value: 'Other', label: 'Otro' }
-  ]
-
-  const insuranceOptions = [
-    'Particular',
-    'OSDE',
-    'Swiss Medical',
-    'Galeno',
-    'Medicus',
-    'Sancor Salud',
-    'Accord Salud',
-    'Otra'
-  ]
-
-  const calculateAge = (birthDate) => {
-    if (!birthDate) return 0;
-    const today = new Date()
-    const birth = new Date(birthDate)
-    let age = today.getFullYear() - birth.getFullYear()
-    const monthDiff = today.getMonth() - birth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--
-    }
-    
-    return age
+export const useApp = () => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error('useApp debe ser usado dentro de AppProvider')
   }
-
-  const filteredPatients = patients.filter(patient => {
-    const matchesSearch = 
-      patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone?.includes(searchTerm)
-    
-    let matchesAge = true
-    if (ageFilter !== 'all') {
-      const age = calculateAge(patient.birth_date)
-      switch (ageFilter) {
-        case 'child':
-          matchesAge = age < 18
-          break
-        case 'adult':
-          matchesAge = age >= 18 && age < 65
-          break
-        case 'senior':
-          matchesAge = age >= 65
-          break
-        default:
-          break;
-      }
-    }
-    
-    return matchesSearch && matchesAge
-  })
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      birth_date: new Date(),
-      gender: '',
-      address: '',
-      emergency_contact: '',
-      emergency_phone: '',
-      insurance: '',
-      medical_notes: '',
-      allergies: '',
-      medications: ''
-    })
-  }
-
-  // === LA CORRECCIÓN ESTÁ AQUÍ ===
-  // Renombramos la función para que no choque con la del contexto
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault()
-    
-    try {
-      // Usamos la función 'createPatient' que viene del contexto
-      await createPatient({
-        ...formData,
-        birth_date: format(formData.birth_date, 'yyyy-MM-dd')
-      })
-      
-      setIsCreateOpen(false)
-      resetForm()
-      toast.success('Paciente creado correctamente')
-    } catch (error) {
-      toast.error('Error al crear el paciente')
-    }
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    
-    try {
-      await updatePatient(selectedPatient.id, {
-        ...formData,
-        birth_date: format(formData.birth_date, 'yyyy-MM-dd')
-      })
-      
-      setIsEditOpen(false)
-      setSelectedPatient(null)
-      resetForm()
-      toast.success('Paciente actualizado correctamente')
-    } catch (error) {
-      toast.error('Error al actualizar el paciente')
-    }
-  }
-
-  const handleEdit = (patient) => {
-    setSelectedPatient(patient)
-    setFormData({
-      name: patient.name || '',
-      email: patient.email || '',
-      phone: patient.phone || '',
-      birth_date: new Date(patient.birth_date),
-      gender: patient.gender || '',
-      address: patient.address || '',
-      emergency_contact: patient.emergency_contact || '',
-      emergency_phone: patient.emergency_phone || '',
-      insurance: patient.insurance || '',
-      medical_notes: patient.medical_notes || '',
-      allergies: patient.allergies || '',
-      medications: patient.medications || ''
-    })
-    setIsEditOpen(true)
-  }
-
-  const handleView = (patient) => {
-    setSelectedPatient(patient)
-    setIsViewOpen(true)
-  }
-
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este paciente?')) {
-      try {
-        await deletePatient(id)
-        toast.success('Paciente eliminado correctamente')
-      } catch (error) {
-        toast.error('Error al eliminar el paciente')
-      }
-    }
-  }
-
-  const getPatientAppointments = (patientId) => {
-    return appointments.filter(apt => apt.patient_id === patientId)
-  }
-
-  const getAgeStats = () => {
-    const stats = {
-      children: patients.filter(p => calculateAge(p.birth_date) < 18).length,
-      adults: patients.filter(p => {
-        const age = calculateAge(p.birth_date)
-        return age >= 18 && age < 65
-      }).length,
-      seniors: patients.filter(p => calculateAge(p.birth_date) >= 65).length
-    }
-    return stats
-  }
-
-  const ageStats = getAgeStats()
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Pacientes</h1>
-          <p className="text-gray-600">
-            Administra la información de todos tus pacientes
-          </p>
-        </div>
-        
-        <div className="flex space-x-2">
-          <Button variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            Importar
-          </Button>
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Paciente
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Crear Nuevo Paciente</DialogTitle>
-                <DialogDescription>
-                  Registra un nuevo paciente en el sistema
-                </DialogDescription>
-              </DialogHeader>
-              
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="basic">Información Básica</TabsTrigger>
-                  <TabsTrigger value="medical">Información Médica</TabsTrigger>
-                </TabsList>
-                
-                {/* === Y LA CORRECCIÓN EN EL FORMULARIO === */}
-                <form onSubmit={handleCreateSubmit} className="space-y-4">
-                  <TabsContent value="basic" className="space-y-4">
-                    {/* El resto del formulario va aquí */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="name">Nombre completo *</Label>
-                            <Input
-                            id="name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({...formData, name: e.target.value})}
-                            placeholder="Juan Pérez"
-                            required
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                            id="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({...formData, email: e.target.value})}
-                            placeholder="juan@email.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="phone">Teléfono *</Label>
-                            <Input
-                            id="phone"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                            placeholder="+54 11 1234-5678"
-                            required
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="gender">Género</Label>
-                            <Select 
-                            value={formData.gender} 
-                            onValueChange={(value) => setFormData({...formData, gender: value})}
-                            >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccionar género" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {genderOptions.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div>
-                        <Label>Fecha de Nacimiento *</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal">
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {formData.birth_date ? format(formData.birth_date, 'PPP', { locale: es }) : 'Seleccionar fecha'}
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={formData.birth_date}
-                                onSelect={(date) => setFormData({...formData, birth_date: date})}
-                                disabled={(date) => date > new Date()}
-                                initialFocus
-                            />
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="medical" className="space-y-4">
-                    {/* Información médica */}
-                  </TabsContent>
-
-                  <DialogFooter className="mt-6">
-                    <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button type="submit">Crear Paciente</Button>
-                  </DialogFooter>
-                </form>
-              </Tabs>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      {/* ... (el resto del JSX de la página se queda igual) ... */}
-    </div>
-  )
+  return context
 }
 
-export default Patients
+// Reducer para manejar el estado de la aplicación
+const appReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    
+    case 'SET_DOCTORS':
+      return { ...state, doctors: action.payload }
+    
+    case 'ADD_DOCTOR':
+      return { ...state, doctors: [...state.doctors, action.payload] }
+    
+    case 'UPDATE_DOCTOR':
+      return {
+        ...state,
+        doctors: state.doctors.map(doc => 
+          doc.id === action.payload.id ? action.payload : doc
+        )
+      }
+    
+    case 'DELETE_DOCTOR':
+      return {
+        ...state,
+        doctors: state.doctors.filter(doc => doc.id !== action.payload)
+      }
+    
+    case 'SET_PATIENTS':
+      return { ...state, patients: action.payload }
+    
+    case 'ADD_PATIENT':
+      return { ...state, patients: [...state.patients, action.payload] }
+    
+    case 'UPDATE_PATIENT':
+      return {
+        ...state,
+        patients: state.patients.map(patient => 
+          patient.id === action.payload.id ? action.payload : patient
+        )
+      }
+    
+    case 'DELETE_PATIENT':
+      return {
+        ...state,
+        patients: state.patients.filter(patient => patient.id !== action.payload)
+      }
+    
+    case 'SET_APPOINTMENTS':
+      return { ...state, appointments: action.payload }
+    
+    case 'ADD_APPOINTMENT':
+      return { ...state, appointments: [...state.appointments, action.payload] }
+    
+    case 'UPDATE_APPOINTMENT':
+      return {
+        ...state,
+        appointments: state.appointments.map(apt => 
+          apt.id === action.payload.id ? action.payload : apt
+        )
+      }
+    
+    case 'DELETE_APPOINTMENT':
+      return {
+        ...state,
+        appointments: state.appointments.filter(apt => apt.id !== action.payload)
+      }
+    
+    case 'SET_STATS':
+      return { ...state, stats: action.payload }
+    
+    default:
+      return state
+  }
+}
+
+const initialState = {
+  loading: true, // Inicia en true para mostrar carga al principio
+  doctors: [],
+  patients: [],
+  appointments: [],
+  stats: {
+    totalAppointments: 0,
+    totalPatients: 0,
+    todayAppointments: 0,
+    appointmentChange: 0
+  }
+}
+
+export const AppProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(appReducer, initialState)
+  const { user } = useAuth()
+
+  // Cargar datos iniciales solo cuando el usuario se autentica
+  useEffect(() => {
+    if (user) {
+      loadAllData()
+    } else {
+      // Si no hay usuario, deja de cargar
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [user])
+
+  // Función para cargar todos los datos de la base de datos
+  const loadAllData = async () => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    try {
+      const [doctors, patients, appointments, stats] = await Promise.all([
+        db.getDoctors(),
+        db.getPatients(),
+        db.getAppointments(),
+        db.getStats()
+      ])
+
+      dispatch({ type: 'SET_DOCTORS', payload: doctors })
+      dispatch({ type: 'SET_PATIENTS', payload: patients })
+      dispatch({ type: 'SET_APPOINTMENTS', payload: appointments })
+      dispatch({ type: 'SET_STATS', payload: stats })
+    } catch (error) {
+      toast.error('Error al cargar datos: ' + error.message)
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }
+
+  // --- FUNCIONES CRUD ---
+  
+  const createDoctor = async (doctorData) => {
+    if (!user) throw new Error("Debes iniciar sesión para crear un doctor");
+    try {
+      const doctor = await db.createDoctor({ ...doctorData, user_id: user.id });
+      dispatch({ type: 'ADD_DOCTOR', payload: doctor });
+      toast.success('Doctor creado correctamente');
+      return doctor;
+    } catch (error) {
+      toast.error('Error al crear doctor: ' + error.message);
+      throw error;
+    }
+  }
+
+  const updateDoctor = async (id, updates) => {
+    try {
+      const doctor = await db.updateDoctor(id, updates)
+      dispatch({ type: 'UPDATE_DOCTOR', payload: doctor })
+      toast.success('Doctor actualizado correctamente')
+      return doctor
+    } catch (error) {
+      toast.error('Error al actualizar doctor: ' + error.message)
+      throw error
+    }
+  }
+
+  const deleteDoctor = async (id) => {
+    try {
+      await db.deleteDoctor(id)
+      dispatch({ type: 'DELETE_DOCTOR', payload: id })
+      toast.success('Doctor eliminado correctamente')
+    } catch (error) {
+      toast.error('Error al eliminar doctor: ' + error.message)
+      throw error
+    }
+  }
+
+  const createPatient = async (patientData) => {
+    if (!user) throw new Error("Debes iniciar sesión para crear un paciente");
+    try {
+      const patient = await db.createPatient({ ...patientData, user_id: user.id });
+      dispatch({ type: 'ADD_PATIENT', payload: patient });
+      toast.success('Paciente creado correctamente');
+      return patient;
+    } catch (error) {
+      toast.error('Error al crear paciente: ' + error.message);
+      throw error;
+    }
+  }
+
+  const updatePatient = async (id, updates) => {
+    try {
+      const patient = await db.updatePatient(id, updates)
+      dispatch({ type: 'UPDATE_PATIENT', payload: patient })
+      toast.success('Paciente actualizado correctamente')
+      return patient
+    } catch (error) {
+      toast.error('Error al actualizar paciente: ' + error.message)
+      throw error
+    }
+  }
+
+  const deletePatient = async (id) => {
+    try {
+      await db.deletePatient(id)
+      dispatch({ type: 'DELETE_PATIENT', payload: id })
+      toast.success('Paciente eliminado correctamente')
+    } catch (error) {
+      toast.error('Error al eliminar paciente: ' + error.message)
+      throw error
+    }
+  }
+  
+  const createAppointment = async (appointmentData) => {
+    if (!user) throw new Error("Debes iniciar sesión para crear una cita");
+    try {
+      const appointment = await db.createAppointment({ ...appointmentData, user_id: user.id });
+      dispatch({ type: 'ADD_APPOINTMENT', payload: appointment });
+      toast.success('Cita creada correctamente');
+      await refreshStats();
+      return appointment;
+    } catch (error) {
+      toast.error('Error al crear cita: ' + error.message);
+      throw error;
+    }
+  }
+
+  const updateAppointment = async (id, updates) => {
+    try {
+      const appointment = await db.updateAppointment(id, updates)
+      dispatch({ type: 'UPDATE_APPOINTMENT', payload: appointment })
+      toast.success('Cita actualizada correctamente')
+      return appointment
+    } catch (error) {
+      toast.error('Error al actualizar cita: ' + error.message)
+      throw error
+    }
+  }
+
+  const deleteAppointment = async (id) => {
+    try {
+      await db.deleteAppointment(id)
+      dispatch({ type: 'DELETE_APPOINTMENT', payload: id })
+      toast.success('Cita eliminada correctamente')
+      await refreshStats();
+    } catch (error) {
+      toast.error('Error al eliminar cita: ' + error.message)
+      throw error
+    }
+  }
+
+  const refreshStats = async () => {
+    try {
+      const stats = await db.getStats()
+      dispatch({ type: 'SET_STATS', payload: stats })
+    } catch (error) {
+      console.error('Error al actualizar estadísticas:', error)
+    }
+  }
+
+  // Valor que se pasa al provider
+  const value = {
+    ...state,
+    loadAllData,
+    createDoctor,
+    updateDoctor,
+    deleteDoctor,
+    createPatient,
+    updatePatient,
+    deletePatient,
+    createAppointment,
+    updateAppointment,
+    deleteAppointment,
+    refreshStats,
+  }
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  )
+}
