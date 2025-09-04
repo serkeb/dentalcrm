@@ -104,33 +104,57 @@ export const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState)
   const { user } = useAuth()
 
-  // Cargar datos iniciales solo cuando el usuario se autentica
+  // ⭐ CORRECCIÓN: Cargar datos iniciales solo cuando el usuario se autentica
   useEffect(() => {
     if (user) {
       loadAllData()
     } else {
-      // Si no hay usuario, deja de cargar
+      // Si no hay usuario, resetea el estado pero mantiene loading en false
+      dispatch({ type: 'SET_DOCTORS', payload: [] })
+      dispatch({ type: 'SET_PATIENTS', payload: [] })
+      dispatch({ type: 'SET_APPOINTMENTS', payload: [] })
+      dispatch({ type: 'SET_STATS', payload: {
+        totalAppointments: 0,
+        totalPatients: 0,
+        todayAppointments: 0,
+        appointmentChange: 0
+      } })
       dispatch({ type: 'SET_LOADING', payload: false })
     }
   }, [user])
 
-  // Función para cargar todos los datos de la base de datos
+  // ⭐ CORRECCIÓN: Función para cargar todos los datos con mejor manejo de errores
   const loadAllData = async () => {
+    if (!user) return; // ⭐ Agregar esta verificación
+    
     dispatch({ type: 'SET_LOADING', payload: true })
     try {
-      const [doctors, patients, appointments, stats] = await Promise.all([
-        db.getDoctors(),
-        db.getPatients(),
-        db.getAppointments(),
-        db.getStats()
-      ])
-
+      // Cargar datos de forma secuencial para evitar problemas de concurrencia
+      const doctors = await db.getDoctors()
       dispatch({ type: 'SET_DOCTORS', payload: doctors })
+      
+      const patients = await db.getPatients()
       dispatch({ type: 'SET_PATIENTS', payload: patients })
+      
+      const appointments = await db.getAppointments()
       dispatch({ type: 'SET_APPOINTMENTS', payload: appointments })
+      
+      const stats = await db.getStats()
       dispatch({ type: 'SET_STATS', payload: stats })
+      
     } catch (error) {
+      console.error('Error al cargar datos:', error)
       toast.error('Error al cargar datos: ' + error.message)
+      // ⭐ En caso de error, establecer datos vacíos para evitar el loading infinito
+      dispatch({ type: 'SET_DOCTORS', payload: [] })
+      dispatch({ type: 'SET_PATIENTS', payload: [] })
+      dispatch({ type: 'SET_APPOINTMENTS', payload: [] })
+      dispatch({ type: 'SET_STATS', payload: {
+        totalAppointments: 0,
+        totalPatients: 0,
+        todayAppointments: 0,
+        appointmentChange: 0
+      } })
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false })
     }
