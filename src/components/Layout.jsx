@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
-  Home, Calendar, Users, Stethoscope, BarChart3, Settings, LogOut, Search, Bell, Menu, X, Package
+  Home, Calendar, Users, Stethoscope, BarChart3, Settings, LogOut, Search, Bell, Menu, X, Package, User // ⭐ Agregar User aquí
 } from 'lucide-react';
 
 // Componente reutilizable para cada enlace del menú de navegación
@@ -167,4 +167,5 @@ const Layout = () => {
 };
 
 export default Layout;
+
 
