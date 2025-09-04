@@ -1,4 +1,3 @@
-// vite.config.js (en la raíz del proyecto)
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
@@ -10,20 +9,28 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  // ⭐ ESTA ES LA PARTE CLAVE PARA SPA:
-  server: {
-    historyApiFallback: true, // Para desarrollo
-  },
-  // ⭐ Y ESTA PARA PRODUCCIÓN:
+  base: '/', // Importante para SPA en producción
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false, // Reducir tamaño del build
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        },
       },
     },
   },
-  // ⭐ Configuración adicional para manejo de rutas
+  server: {
+    port: 5173,
+    host: true,
+    historyApiFallback: true,
+  },
   preview: {
-    historyApiFallback: true, // Para preview build
+    port: 4173,
+    host: true,
+    historyApiFallback: true,
   }
 })
